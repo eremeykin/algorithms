@@ -7,12 +7,11 @@ import java.util.Random;
 
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
-
-import InsertionSort.InsertionSort;
-
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import api.Sort;
+import insertionsort.InsertionSort;
+import mergesort.MergeSort;
 
 @RunWith(Parameterized.class)
 public class IntegerSortTest {
@@ -27,7 +26,6 @@ public class IntegerSortTest {
 	public void testRandom() {
 		Random rand = new Random(4654851545l);
 		int count = rand.nextInt(500) + 50;
-		// int count = 0;
 		Integer[] array = new Integer[count];
 		for (int i = 0; i < count; i++) {
 			array[i] = rand.nextInt(100);
@@ -57,7 +55,8 @@ public class IntegerSortTest {
 	@Parameters
 	public static Collection instancesToTest() {
 		ArrayList<Sort<Integer>> list = new ArrayList<Sort<Integer>>();
-		list.add(new InsertionSort<Integer>());
+//		list.add(new InsertionSort<Integer>());
+		list.add(new MergeSort<Integer>());
 		return list;
 	};
 }

@@ -1,4 +1,4 @@
-package InsertionSort;
+package insertionsort;
 
 import api.Sort;
 
