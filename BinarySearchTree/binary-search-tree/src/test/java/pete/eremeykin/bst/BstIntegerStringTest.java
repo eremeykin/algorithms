@@ -19,7 +19,6 @@ public class BstIntegerStringTest extends BstBaseTest<Integer, String> {
 	private ArgumentGenerator<String> stringGenerator = new StringArgumentGenerator(0.75);
 	private ArgumentGenerator<Integer> integerGenerator = new IntegerArgumentGenerator(0.75);
 	private ArgumentGenerator<Integer> hFreqIntegerGenerator = fromExisting(integerGenerator, 0.05);
-	private ArgumentGenerator<Integer> lFreqIntegerGenerator = fromExisting(integerGenerator, 0.05);
 
 	@Test
 	public void test2() {

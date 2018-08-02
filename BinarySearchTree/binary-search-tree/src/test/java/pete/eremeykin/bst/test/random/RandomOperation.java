@@ -1,7 +1,6 @@
 package pete.eremeykin.bst.test.random;
 
 import java.util.EnumMap;
-import java.util.Map.Entry;
 import java.util.Random;
 
 import pete.eremeykin.bst.test.framework.Methods;
