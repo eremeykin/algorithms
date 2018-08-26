@@ -21,7 +21,6 @@ public class MergeSort<T extends Comparable<T>> implements Sort<T> {
             return;
         int k = i + (j - i) / 2;
         sort(i, k);
-        ;
         sort(k + 1, j);
         merge(i, k, j);
     }

@@ -7,7 +7,7 @@
   <version>0.0.1-SNAPSHOT</version>
   <packaging>jar</packaging>
 
-  <name>147A-Punctuation</name>
+  <name>CF147A-Punctuation</name>
   <url>http://maven.apache.org</url>
 
   <properties>
