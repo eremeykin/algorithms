@@ -3,13 +3,12 @@ package pete.eremeykin.cf.t982d;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Scanner;
 
 public class Solution {
 
-    Day[] days;
-    Day[] order;
-
+    private Day[] days;
 
     static class Day implements Comparable<Day> {
         int index;
@@ -30,168 +29,109 @@ public class Solution {
 
         @Override
         public int compareTo(Day o) {
-            if (value > o.value) {
+            return this.value - o.value;
+        }
+    }
+
+    public class DisjoinedSet {
+
+        int[] parent;
+        int[] rank; // height of the tree
+        int[] locLength;
+
+        public DisjoinedSet(int capacity) {
+            parent = new int[capacity];
+            rank = new int[capacity];
+            locLength = new int[capacity];
+        }
+
+        public void makeSet(int dayIndex) {
+            parent[dayIndex] = dayIndex;
+            rank[dayIndex] = 1;
+            locLength[dayIndex] = 1;
+        }
+
+        public void union(int c1, int c2) {
+            int f1 = find(c1);
+            int f2 = find(c2);
+            if (f1 == f2)
+                return;
+            int old = locLength[f1];
+            locLength[f1] += locLength[f2];
+            locLength[f2] += old;
+
+            if (rank[f1] > rank[f2])
+                parent[f2] = f1;
+            else {
+                parent[f1] = f2;
+                if (rank[f1] == rank[f2])
+                    rank[f2]++;
+            }
+        }
+
+        int find(int dayIndex) {
+            if (dayIndex < 0 || dayIndex >= parent.length || rank[dayIndex] == 0)
                 return -1;
+            int c = dayIndex;
+            while (parent[c] != c) { // find root
+                c = parent[c];
             }
-            if (value < o.value) {
-                return 1;
+            int root = c;
+            c = dayIndex;
+            while (parent[c] != root) { // compress path
+                int nextC = parent[c];
+                parent[c] = root;
+                c = nextC;
             }
-            return 0;
-        }
-    }
-
-    class Location {
-        Day startDay;
-        Day endDay;
-        int length;
-
-        Location(Day startDay, Day endDay) {
-            this.startDay = startDay;
-            this.endDay = endDay;
-            this.length = endDay.index - startDay.index + 1;
+            return c;
         }
 
-
-        List<Location> splitAt(int index) {
-            ArrayList<Location> result = new ArrayList<>();
-            int left = index - 1;
-            int right = index + 1;
-            if (left > 0) {
-                Location leftLoc = new Location(this.startDay, Solution.this.days[left]);
-                if (leftLoc.length > 0)
-                    result.add(leftLoc);
-            }
-            if (right < days.length) {
-                Location rightLoc = new Location(days[right], this.endDay);
-                if (rightLoc.length > 0)
-                    result.add(rightLoc);
-            }
-            return result;
+        int len(int dayIndex) {
+            int f = find(dayIndex);
+            if (f < 0 || f >= parent.length)
+                return -1;
+            return locLength[f]; // rank is height of the tree, not the location length!
         }
 
-        boolean contains(Day d) {
-            return d.index >= startDay.index && d.index <= endDay.index;
-        }
-
-        boolean contains(int dayIndex) {
-            return contains(days[dayIndex]);
-        }
-
-        @Override
-        public String toString() {
-            return "Location{" +
-                    "startDay=" + startDay.index +
-                    ", endDay=" + endDay.index +
-                    ", length=" + length +
-                    '}';
-        }
-    }
-
-    static class K {
-        int kValue;
-        int locLen;
-        int locNum;
-
-        K(int kValue, int locLen, int locNum) {
-            this.kValue = kValue;
-            this.locLen = locLen;
-            this.locNum = locNum;
-        }
-
-        @Override
-        public String toString() {
-            return "K{" +
-                    "kValue=" + kValue +
-                    ", locLen=" + locLen +
-                    ", locNum=" + locNum +
-                    '}';
-        }
-    }
-
-    private Integer dumn() {
-        Map<Integer, List<Location>> ks = new HashMap<>();
-        for (int i = 0; i < days.length; i++) {
-            Day day = days[i];
-            int k = day.value;
-            Integer start = null;
-            Integer end = null;
-            for (int j = 0; j < days.length; j++) {
-                Day cday = days[j];
-                if (cday.value < k) {
-                    if (start == null)
-                        start = j;
-                } else {
-                    if (start != null) {
-                        Location loc = new Location(days[start], days[j - 1]);
-                        ks.get(k);
-                        start = null;
-                    }
-                }
-            }
-        }
-        int bestK = Integer.MAX_VALUE;
-        int maxLocs = 0;
-        outer:
-        for (Map.Entry<Integer, List<Location>> me : ks.entrySet()) {
-            Integer currK = me.getKey();
-            List<Location> locs = me.getValue();
-            if (locs.isEmpty()) continue;
-            int l = locs.get(0).length;
-            for (int i = 0; i < locs.size(); i++) {
-                Location location = locs.get(i);
-                if (location.length != l)
-                    continue outer;
-            }
-            if (locs.size() > maxLocs) {
-                maxLocs = locs.size();
-                bestK = currK;
-            }
-        }
-        return bestK;
     }
 
     private Integer call() {
-        order = new Day[days.length];
-        System.arraycopy(days, 0, order, 0, days.length); //n
-        Arrays.sort(order);// O(n log n)
+        Arrays.sort(days);
 
-        List<K> ks = new LinkedList<>();
-        ks.add(new K(order[0].value + 1, days.length, 1));
-        List<Location> locations = new LinkedList<>();
-        locations.add(new Location(days[0], days[days.length - 1]));
-        int kValue;
+        int maxLocLength = 0;
+        int numLocWithMaxLength = 0;
+        int numLocTotal = 0;
+        int bestK = 0;
+        int bestNumLoc = 0;
+
+        DisjoinedSet ds = new DisjoinedSet(days.length);
+
         for (int i = 0; i < days.length; i++) {
-            kValue = order[i].value;
-            Integer locLen = null;
-            for (ListIterator<Location> iterator = locations.listIterator(); iterator.hasNext(); ) {
-                Location next = iterator.next();
-                if (next.contains(order[i])) {
-                    iterator.remove();
-                    for (Location nLoc : next.splitAt(order[i].index)) {
-                        iterator.add(nLoc);
-                        iterator.previous();
-                    }
-                    continue;
-                }
-                if (locLen == null) {
-                    locLen = next.length;
-                }
-                if (locLen != next.length) {
-                    locLen = -1;
-                }
+            ds.makeSet(days[i].index);
+            numLocTotal++;
+            int left = ds.find(days[i].index - 1); // the index of a day that is one position left
+            if (left != -1) {
+                ds.union(days[i].index, left);
+                numLocTotal--;
             }
-            if (locLen != null && locLen > 0) {
-                ks.add(new K(kValue, locLen, locations.size()));
+            int right = ds.find(days[i].index + 1); // the index of a day that is one position right
+            if (right != -1) {
+                ds.union(days[i].index, right);
+                numLocTotal--;
             }
-        }
-        K bestK = ks.get(0);
-        for (int i = 0; i < ks.size(); i++) {
-            K k = ks.get(i);
-            if (k.locNum >= bestK.locNum) {
-                bestK = k;
+            int l = ds.len(days[i].index);
+            if (l > maxLocLength) {
+                maxLocLength = l;
+                numLocWithMaxLength = 0;
+            }
+            if (l == maxLocLength)
+                numLocWithMaxLength++;
+            if (numLocTotal > bestNumLoc && numLocWithMaxLength == numLocTotal) {
+                bestK = days[i].value;
+                bestNumLoc = numLocTotal;
             }
         }
-        return bestK.kValue;
+        return bestK + 1;
     }
 
     public static void main(String... args) throws IOException {

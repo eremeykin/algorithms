@@ -40,7 +40,7 @@ public class SampleTest {
     @Test
     public void testSample() throws IOException {
         System.setIn(new ByteArrayInputStream(input.getBytes()));
-        Solution38816033.main(input);
+        Solution.main(input);
         String actual = myOut.toString();
         assertEquals(expected, actual);
     }
